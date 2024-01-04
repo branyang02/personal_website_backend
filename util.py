@@ -25,15 +25,11 @@ def get_word_details(word):
 
 def get_audio(text):
     """Converts text to speech using OpenAI's API and returns the file path."""
-    speech_file_path = Path(__file__).parent / "speech.mp3"
-
     response = client.audio.speech.create(
         model="tts-1",
         voice="alloy",
         input=text,
         response_format="mp3"
     )
-    
-    # response.stream_to_file("output.mp3")
-
+    print("Successfully converted text to speech.")
     return response
