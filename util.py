@@ -31,5 +31,5 @@ def get_audio(text):
         input=text,
         response_format="mp3"
     )
-    print("Successfully converted text to speech.")
+    print(text)
     return response
