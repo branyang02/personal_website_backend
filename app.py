@@ -62,11 +62,12 @@ def run_code():
 
     pre_code = """
 import matplotlib.pyplot as plt
-def get_image(fig, filename="image.png"):
+import numpy as np
+def get_image(fig):
+    filename="image.png"
     fig.savefig(filename)
-    """
-
-    # Initialize encoded_string as an empty string
+"""
+    print(pre_code + code)
     encoded_string = ""
     try:
         result = subprocess.run(
@@ -80,11 +81,10 @@ def get_image(fig, filename="image.png"):
         if os.path.exists("image.png"):
             with open("image.png", "rb") as image_file:
                 encoded_string = base64.b64encode(image_file.read()).decode("utf-8")
-            os.remove("image.png")  # Clean up after sending
+            os.remove("image.png")
     except subprocess.CalledProcessError as e:
         output = e.stderr
     finally:
-        # Ensure encoded_string is defined even if empty
         return jsonify({"output": output, "image": encoded_string})
 
 
