@@ -3,6 +3,7 @@ from util import get_word_details, get_audio
 from flask_cors import CORS
 import os
 import subprocess
+import base64
 
 
 app = Flask(__name__)
@@ -59,15 +60,32 @@ def run_code():
 
     code = data["code"]
 
+    pre_code = """
+import matplotlib.pyplot as plt
+def get_image(fig, filename="image.png"):
+    fig.savefig(filename)
+    """
+
+    # Initialize encoded_string as an empty string
+    encoded_string = ""
     try:
         result = subprocess.run(
-            ["python3", "-c", code], text=True, capture_output=True, check=True
+            ["python3", "-c", pre_code + code],
+            text=True,
+            capture_output=True,
+            check=True,
         )
         output = result.stdout
+        # Check if the image file exists and encode it
+        if os.path.exists("image.png"):
+            with open("image.png", "rb") as image_file:
+                encoded_string = base64.b64encode(image_file.read()).decode("utf-8")
+            os.remove("image.png")  # Clean up after sending
     except subprocess.CalledProcessError as e:
         output = e.stderr
-
-    return jsonify({"output": output})
+    finally:
+        # Ensure encoded_string is defined even if empty
+        return jsonify({"output": output, "image": encoded_string})
 
 
 if __name__ == "__main__":
