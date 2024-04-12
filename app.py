@@ -1,5 +1,5 @@
 from flask import Flask, request, jsonify, Response
-from util import get_word_details, get_audio
+from util import get_word_details, get_audio, run_c_code_sync
 from flask_cors import CORS
 import os
 import subprocess
@@ -61,22 +61,9 @@ def run_c_code():
     code = data["code"]
 
     try:
-        result = subprocess.run(
-            ["gcc", "-o", "output", "-x", "c", "-"],
-            input=code,
-            text=True,
-            capture_output=True,
-            check=True,
-        )
-        output = result.stdout
-        result = subprocess.run(
-            ["./output"], text=True, capture_output=True, check=True
-        )
-        os.remove("output")
-        output += result.stdout
-
-    except subprocess.CalledProcessError as e:
-        output = e.stderr
+        output = run_c_code_sync(code)
+    except Exception as e:
+        output = str(e)
     finally:
         return jsonify({"output": output})
 
