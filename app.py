@@ -76,6 +76,23 @@ def run_python_code():
 
     code = data["code"]
 
+    # List of potentially dangerous modules or functions
+    blocked_keywords = {
+        "open",
+        "file",
+        "exec",
+        "eval",
+        "subprocess",
+        "os.system",
+        "import os",
+        "__import__",
+        "sys",
+    }
+
+    # Check for dangerous keywords
+    if any(keyword in code for keyword in blocked_keywords):
+        return jsonify({"error": "Operation not allowed"}), 403
+
     pre_code = """
 import matplotlib.pyplot as plt
 import numpy as np
