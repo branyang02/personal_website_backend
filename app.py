@@ -91,7 +91,8 @@ def run_python_code():
 
     # Check for dangerous keywords
     if any(keyword in code for keyword in blocked_keywords):
-        return jsonify({"error": "Operation not allowed"}), 403
+        print("Operation not allowed")
+        return jsonify({"output": "Error: Operation not allowed"})
 
     pre_code = """
 import matplotlib.pyplot as plt
