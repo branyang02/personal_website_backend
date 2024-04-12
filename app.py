@@ -52,8 +52,37 @@ def text_to_speech():
         return jsonify({"error": str(e)}), 500
 
 
-@app.route("/api/run-code", methods=["POST"])
-def run_code():
+@app.route("/api/run-c-code", methods=["POST"])
+def run_c_code():
+    data = request.get_json()
+    if not data or "code" not in data:
+        return jsonify({"error": "No code provided"}), 400
+
+    code = data["code"]
+
+    try:
+        result = subprocess.run(
+            ["gcc", "-o", "output", "-x", "c", "-"],
+            input=code,
+            text=True,
+            capture_output=True,
+            check=True,
+        )
+        output = result.stdout
+        result = subprocess.run(
+            ["./output"], text=True, capture_output=True, check=True
+        )
+        os.remove("output")
+        output += result.stdout
+
+    except subprocess.CalledProcessError as e:
+        output = e.stderr
+    finally:
+        return jsonify({"output": output})
+
+
+@app.route("/api/run-python-code", methods=["POST"])
+def run_python_code():
     data = request.get_json()
     if not data or "code" not in data:
         return jsonify({"error": "No code provided"}), 400
