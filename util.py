@@ -51,10 +51,13 @@ def run_c_code_sync(code):
         loop.close()
 
     result = result.raw_json
+    print("-------------------")
+    print(result)
+    print("-------------------")
 
     if result["compile"]["code"] != 0:
-        raise Exception(result["compile"]["stdout"])
+        raise Exception(result["compile"]["stderr"])
     if result["run"]["code"] != 0:
-        raise Exception(result["run"]["stdout"])
+        raise Exception(result["run"]["stderr"])
 
     return result["run"]["stdout"]
