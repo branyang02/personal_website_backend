@@ -55,9 +55,9 @@ def run_c_code_sync(code):
     print(result)
     print("-------------------")
 
-    if result["compile"]["code"] != 0:
+    if result["compile"]["code"] != 0 or result["compile"]["stderr"] != "":
         raise Exception(result["compile"]["stderr"])
-    if result["run"]["code"] != 0:
+    if result["run"]["code"] != 0 or result["run"]["stderr"] != "":
         raise Exception(result["run"]["stderr"])
 
     return result["run"]["stdout"]
