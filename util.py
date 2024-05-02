@@ -35,6 +35,11 @@ def get_audio(text):
 
 
 def run_c_code_sync(code):
+    # check if we are using <pthread.h> in the code
+    if "#include <pthread.h>" in code:
+        print("Using pthread")
+        code = create_thread_input(code)
+
     result = None
 
     async def main_loop():
@@ -61,3 +66,47 @@ def run_c_code_sync(code):
         raise Exception(result["run"]["stderr"])
 
     return result["run"]["stdout"]
+
+
+def create_thread_input(code):
+    # Prepare the code by escaping backslashes and double quotes
+    escaped_code = code.replace("\\", "\\\\").replace('"', '\\"')
+    lines = escaped_code.split("\n")
+    for i in range(len(lines)):
+        line = lines[i]
+        lines[i] = '"' + line + '\\n"'
+
+    formatted_code = "\n".join(lines)
+
+    modified_code = f"""
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+
+
+int main() {{
+
+    const char* code = \n{formatted_code};
+
+    // Write the above code to a file
+    FILE* file = fopen("thread_example.c", "w");
+    if (file == NULL) {{
+        perror("Failed to open file");
+        return 1;
+    }}
+    fputs(code, file);
+    fclose(file);
+
+    int result = system("gcc -o thread_example thread_example.c -pthread");
+    if (result != 0) {{
+        fprintf(stderr, "Compilation failed\\n");
+        return 1;
+    }}
+
+    system("./thread_example");
+
+    return 0;
+}}
+"""
+
+    return modified_code
