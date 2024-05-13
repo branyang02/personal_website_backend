@@ -34,40 +34,6 @@ def get_audio(text):
     return response
 
 
-def run_c_code_sync(code):
-    # check if we are using <pthread.h> in the code
-    if "#include <pthread.h>" in code:
-        print("Using pthread")
-        code = create_thread_input(code)
-
-    result = None
-
-    async def main_loop():
-        nonlocal result
-        client = PystonClient()
-        output = await client.execute("c", [File(code)])
-        result = output
-
-    loop = asyncio.new_event_loop()
-    asyncio.set_event_loop(loop)
-    try:
-        loop.run_until_complete(main_loop())
-    finally:
-        loop.close()
-
-    result = result.raw_json
-    print("-------------------")
-    print(result)
-    print("-------------------")
-
-    if result["compile"]["code"] != 0 or result["compile"]["stderr"] != "":
-        raise Exception(result["compile"]["stderr"])
-    if result["run"]["code"] != 0 or result["run"]["stderr"] != "":
-        raise Exception(result["run"]["stderr"])
-
-    return result["run"]["stdout"]
-
-
 def create_thread_input(code):
     # Prepare the code by escaping backslashes and double quotes
     escaped_code = code.replace("\\", "\\\\").replace('"', '\\"')
@@ -110,3 +76,43 @@ int main() {{
 """
 
     return modified_code
+
+
+def run_c_code_sync(code):
+    # check if we are using <pthread.h> in the code
+    if "#include <pthread.h>" in code:
+        print("Using pthread")
+        code = create_thread_input(code)
+
+    return run_any_code_sync(code, "c")
+
+
+def run_any_code_sync(code, language):
+    result = None
+
+    async def main_loop():
+        nonlocal result
+        client = PystonClient()
+        output = await client.execute(language, [File(code)])
+        result = output
+
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
+    try:
+        loop.run_until_complete(main_loop())
+    finally:
+        loop.close()
+
+    result = result.raw_json
+    print("-------------------")
+    print(result)
+    print("-------------------")
+
+    if "compile" in result and (
+        result["compile"]["code"] != 0 or result["compile"]["stderr"] != ""
+    ):
+        raise Exception(result["compile"]["stderr"])
+    if result["run"]["code"] != 0 or result["run"]["stderr"] != "":
+        raise Exception(result["run"]["stderr"])
+
+    return result["run"]["stdout"]
