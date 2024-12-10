@@ -1,3 +1,4 @@
+sckit-learn
 Flask==3.0.0
 openai==1.4.0
 Flask-Cors==4.0.0
@@ -10,4 +11,3 @@ torch==1.11.0+cpu
 torchvision==0.12.0+cpu
 matplotlib==3.8.3
 aiopyston==1.2.1
-# sckit-learn==1.4
